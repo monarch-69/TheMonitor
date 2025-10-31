@@ -1,11 +1,11 @@
-# 🖥️ Server Monitoring Suite (In Development)
+# Server Monitoring Suite (In Development)
 
 A distributed **Server Monitoring Suite** designed to track real-time system metrics across multiple nodes, built in **C++** for performance and reliability.  
 The project is currently in active development, the **Agent** module is implemented and operational but has room for improvements, while the **Server** component is in progress.
 
 ---
 
-## 🚀 Overview
+## Overview
 
 The Server Monitoring Suite aims to provide **lightweight, efficient, and real-time** monitoring of system resources such as:
 - CPU & Memory utilization
@@ -19,9 +19,9 @@ The architecture is designed around **a distributed model**, with:
 
 ---
 
-## 🧩 Current Progress
+## Current Progress
 
-### ✅ Completed — Agent
+### Completed — Agent
 - Written in modern **C++17**, focusing on speed and low resource footprint.
 - Collects key system metrics (CPU, RAM, Disk, Network, etc.).
 - Supports **cross-platform compatibility** (tested on Linux and Windows).
@@ -29,7 +29,7 @@ The architecture is designed around **a distributed model**, with:
 - Modular code design for easy extension (additional metrics or sensors).
 - Room for **improvements** and **hardening**.
 
-### 🏗️ In Development — Server
+### In Development — Server
 - Backend planned to handle real-time data ingestion from agents.
 - REST and WebSocket support for dashboard integration.
 - Will include storage backend for historical metric analysis.
@@ -37,7 +37,7 @@ The architecture is designed around **a distributed model**, with:
 
 ---
 
-## 🌟 Highlights & Strengths
+## Highlights & Strengths
 
 - **Efficient low-level data collection** using C++ system APIs.
 - **Scalable architecture** allowing multiple agents per network.
@@ -47,20 +47,20 @@ The architecture is designed around **a distributed model**, with:
 
 ---
 
-## 🧭 Future Roadmap
+## Future Roadmap
 
 | Stage | Component | Description |
 |-------|------------|-------------|
-| ✅ | Agent | Fully developed and tested on multiple systems |
-| 🏗️ | Server | Implement API & metric aggregation engine |
-| 🧪 | Visualization | Build a React/Tailwind dashboard for data display |
-| ⚙️ | Storage | Add persistent metric logging (e.g., SQLite/InfluxDB) |
-| 🧠 | Intelligence | Introduce anomaly detection and alerting |
-| ☁️ | Cloud Deploy | Dockerize and deploy across multiple instances |
+| Agent | Fully developed and tested on multiple systems |
+| Server | Implement API & metric aggregation engine |
+| Visualization | Build a React/Tailwind dashboard for data display |
+| Storage | Add persistent metric logging (e.g., SQLite/InfluxDB) |
+| Intelligence | Introduce anomaly detection and alerting |
+| Cloud Deploy | Dockerize and deploy across multiple instances |
 
 ---
 
-## 🔍 Scope for Improvement
+## Scope for Improvement
 
 - Add **encryption** and **authentication** for agent-server communication.
 - Optimize **data batching and compression** for network efficiency.
@@ -70,7 +70,7 @@ The architecture is designed around **a distributed model**, with:
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Component | Technology |
 |------------|-------------|
@@ -82,41 +82,40 @@ The architecture is designed around **a distributed model**, with:
 
 ---
 
-## 💡 Why This Project Matters
+## Why This Project Matters
 
 This suite is designed to be **fast, extensible, and educational**, suitable both as a real-world monitoring tool and a **learning project for distributed systems** and **systems programming** enthusiasts.  
 It reflects hands-on experience in **C++ network programming, process monitoring, and low-level system interaction**.
 
 ---
 
-## 📬 Current Status
+## Current Status
 
-- **Agent**: ✅ Completed and functional  
-- **Server**: 🚧 Under active development  
-- **Dashboard**: 🕓 Planned  
+- **Agent**: Completed and functional  
+- **Server**: Under active development  
+- **Dashboard**: Planned  
 
 > The agent is ready to use and serves as the foundation for the rest of the suite.  
 > Contributions, testing, and feedback are welcome!
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Pull requests, feature suggestions, and issue reports are all welcome!  
 If you'd like to help with the server or dashboard, feel free to fork the repo and start experimenting.
 
 ---
 
-## 🧑‍💻 Author
+## Author
 
 **Ritesh Tiwari**  
 Developer | Systems Programmer | Distributed Systems Enthusiast  
-📧 Contact: **  
+📧 Contact: **https://www.linkedin.com/in/ritesh-tiwari-67871124a**  
 
 ---
 
-## 🏁 License
+## License
 
 This project is open-source under the **MIT License**.  
 Feel free to explore, use, and modify with attribution.
-
