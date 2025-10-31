@@ -49,8 +49,8 @@ The architecture is designed around **a distributed model**, with:
 
 ## Future Roadmap
 
-| Stage | Component | Description |
-|-------|------------|-------------|
+| Component | Description |
+|------------|-------------|
 | Agent | Fully developed and tested on multiple systems |
 | Server | Implement API & metric aggregation engine |
 | Visualization | Build a React/Tailwind dashboard for data display |
@@ -111,7 +111,7 @@ If you'd like to help with the server or dashboard, feel free to fork the repo a
 
 **Ritesh Tiwari**  
 Developer | Systems Programmer | Distributed Systems Enthusiast  
-📧 Contact: **https://www.linkedin.com/in/ritesh-tiwari-67871124a**  
+Contact: **https://www.linkedin.com/in/ritesh-tiwari-67871124a**  
 
 ---
 
