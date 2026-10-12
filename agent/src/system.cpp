@@ -21,7 +21,7 @@ pair<uint64, uint64> get_num_pos_len(const string& line)
     return make_pair(spos, len);
 }
 
-uint8 read_mem_stat(MemInfo& memstat)
+uint8 read_mem_stat(MemStat& memstat)
 {
     ifstream in_file{ MEMINFO };
     string line;
@@ -104,7 +104,7 @@ uint8 read_cpu_stat(CpuStat& cpu_stat)
         return CPU_STAT_READ_FAIL;
     }
 
-    // Let's get teh overall cpu stat
+    // Let's get the overall cpu stat
     printf("CpuStat: %s\n", line.c_str());
 
     uint8 pos = 5, spos = 0; // cpu 12893923 0 192839123 121 121 123 8899 0 0 0

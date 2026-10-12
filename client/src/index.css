@@ -1,0 +1,112 @@
+/* ==========================================================================
+   THE MONITOR — Design System
+   bg #181818 · teal #2FC9BA (mascot backdrop) · sage #A9D6A2 (mascot tie)
+   amber #E68A4F (mascot ear) · paper #F1EFE7 (text)
+   Display: Space Grotesk · Body: Inter · Data: JetBrains Mono
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg-base:#181818;
+  --bg-raised:#1e1e1e;
+  --bg-card:#212121;
+  --bg-card-hover:#252525;
+  --line:#2d2d2d;
+  --line-soft:#242424;
+
+  --teal:#2FC9BA;
+  --teal-dim:#1d8f84;
+  --teal-glow:rgba(47,201,186,0.18);
+  --sage:#A9D6A2;
+  --amber:#E68A4F;
+
+  --text-hi:#F1EFE7;
+  --text-mid:#B8B6AE;
+  --text-low:#78766f;
+
+  --radius-s:8px;
+  --radius-m:14px;
+  --radius-l:22px;
+
+  --font-display:'Space Grotesk', sans-serif;
+  --font-body:'Inter', sans-serif;
+  --font-mono:'JetBrains Mono', monospace;
+
+  --ease:cubic-bezier(.16,.84,.32,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg-base);
+  color:var(--text-hi);
+  font-family:var(--font-body);
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font-family:inherit;color:inherit}
+
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:0.001ms !important;animation-iteration-count:1 !important;transition-duration:0.001ms !important;scroll-behavior:auto !important}
+}
+
+:focus-visible{
+  outline:2px solid var(--teal);
+  outline-offset:3px;
+  border-radius:4px;
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 980px){
+  .cro-inner{grid-template-columns:1fr;gap:44px}
+  .cro-card{max-width:420px;margin:0 auto}
+  .feature-grid{grid-template-columns:repeat(2,1fr)}
+  .int-grid{grid-template-columns:repeat(2,1fr)}
+  .pricing-grid{grid-template-columns:1fr;max-width:440px;margin:0 auto}
+  .graph-grid{grid-template-columns:1fr}
+  .graph-grid-bottom{grid-template-columns:1fr}
+  .dash-body{grid-template-columns:1fr}
+  .foot-top{grid-template-columns:1fr 1fr;gap:34px}
+  .auth-visual{display:none}
+  .auth-shell{grid-template-columns:1fr}
+}
+
+@media (max-width: 760px){
+  .nav-links{
+    position:fixed;top:64px;left:0;right:0;bottom:0;
+    background:var(--bg-base);
+    flex-direction:column;
+    padding:30px 32px;
+    align-items:flex-start;
+    gap:22px;
+    transform:translateX(100%);
+    transition:transform .35s var(--ease);
+    z-index:99;
+  }
+  .nav-links.open{transform:translateX(0)}
+  .nav-toggle{display:flex}
+  .nav-cta .btn-ghost{display:none}
+  .hero{padding:130px 0 70px}
+  .hero-actions{flex-direction:column;width:100%}
+  .hero-actions .btn{width:100%}
+  .feature-grid{grid-template-columns:1fr}
+  .int-grid{grid-template-columns:1fr 1fr}
+  .cta-band{flex-direction:column;text-align:center;padding:44px 28px}
+  .foot-top{grid-template-columns:1fr}
+  .wrap{padding:0 22px}
+  .dash-stats{grid-template-columns:1fr 1fr}
+}
+
+@media (max-width: 480px){
+  .int-grid{grid-template-columns:1fr}
+  .oauth-grid.oauth-4{grid-template-columns:1fr 1fr}
+  .dash-stats{grid-template-columns:1fr}
+}

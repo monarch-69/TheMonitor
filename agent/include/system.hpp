@@ -27,7 +27,7 @@
 
 using json = nlohmann::json;
 
-class MemInfo {
+class MemStat {
 public:
     struct MemStatStruct {
         uint64 memtotal;
@@ -43,32 +43,38 @@ public:
     
     MemStatStruct memstat;
 
-    MemInfo() : MemInfo(0) { };
-    MemInfo(uint64_t initializer) { this->memstat = { 0 }; };
+    MemStat() : MemStat(0) { };
+    MemStat(uint64_t initializer) { this->memstat = { 0 }; };
     
-    MemInfo(MemInfo &&);
-    MemInfo(const MemInfo &);
-    MemInfo& operator=(MemInfo &&);
-    MemInfo& operator=(const MemInfo &);
-    ~MemInfo() {};
+    MemStat(MemStat &&);
+    MemStat(const MemStat &);
+    MemStat& operator=(MemStat &&);
+    MemStat& operator=(const MemStat &);
+    ~MemStat() {};
 
     void print_stats() {
         printf("Snapshot at = %lu\n", this->memstat.timestamp);
-        printf("MemTotal = %lf, MemUsed = %lf, MemAvail = %lf, Percentage = %lf\n",
+        printf(
+                "MemTotal = %lf, MemUsed = %lf, MemAvail = %lf, Percentage = %lf\n",
                (double)this->memstat.memtotal / 1024,
                (double)this->memstat.memused / 1024,
                (double)this->memstat.memavail / 1024,
-               this->memstat.usedpercent);
-        printf("SwapTotal = %lf, SwapFree = %lf, SwapAvail = %lf, Percentage = %lf\n",
+               this->memstat.usedpercent
+               );
+        printf(
+                "SwapTotal = %lf, SwapFree = %lf, SwapAvail = %lf, Percentage = %lf\n",
                (double)this->memstat.swaptotal / 1024,
                (double)this->memstat.swapfree / 1024,
                (double)this->memstat.swapused / 1024,
-               this->memstat.swapusedpercent);
+               this->memstat.swapusedpercent
+               );
     }
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(MemInfo::MemStatStruct,
-                                           memtotal, memavail, memused, usedpercent,
-                                           swaptotal, swapfree, swapused, swapusedpercent, timestamp);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    MemStat::MemStatStruct,
+    memtotal, memavail, memused, usedpercent,
+    swaptotal, swapfree, swapused, swapusedpercent, timestamp
+);
 
 class CpuStat {
 public:
@@ -102,7 +108,8 @@ public:
 
     void print_stats() {
         printf("No of cores = %lu\n", this->totalcores);
-        printf("User = %lu, UserNice = %lu, System = %lu, Idle = %lu, IoWait = %lu, Irq = %lu, SoftIrq = %lu, Steal = %lu, Guest = %lu, GuestNice = %lu\n",
+        printf(
+                "User = %lu, UserNice = %lu, System = %lu, Idle = %lu, IoWait = %lu, Irq = %lu, SoftIrq = %lu, Steal = %lu, Guest = %lu, GuestNice = %lu\n",
                this->cpustatagg.user,
                this->cpustatagg.usernice,
                this->cpustatagg.system,
@@ -112,25 +119,28 @@ public:
                this->cpustatagg.softirq,
                this->cpustatagg.steal,
                this->cpustatagg.guest,
-               this->cpustatagg.guestnice);
+               this->cpustatagg.guestnice
+               );
     }
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(CpuStat::CpuStatStruct,
-                                        user, usernice, system, idle, iowait,
-                                        irq, softirq, steal, guest, guestnice);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    CpuStat::CpuStatStruct,
+    user, usernice, system, idle, iowait,
+    irq, softirq, steal, guest, guestnice
+);
 
 
 struct SystemStats {
     CpuStat::CpuStatStruct& cpustat;
-    MemInfo::MemStatStruct& memstat;
+    MemStat::MemStatStruct& memstat;
     
-    SystemStats(CpuStat::CpuStatStruct& cpustat, MemInfo::MemStatStruct& memstat) : cpustat(cpustat), memstat(memstat) {}
+    SystemStats(CpuStat::CpuStatStruct& cpustat, MemStat::MemStatStruct& memstat) : cpustat(cpustat), memstat(memstat) {}
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SystemStats, cpustat, memstat);
 
 
 // System Functions
-uint8 read_mem_stat(MemInfo& mem_stat);
+uint8 read_mem_stat(MemStat& mem_stat);
 uint8 read_cpu_stat(CpuStat& cpu_stat);
 
 // Helpers Functions

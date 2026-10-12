@@ -1,12 +1,14 @@
 # Sset the compiler and it's flags
 CXX = g++
 CXXFLAGS = -std=c++17 -Wall -Iinclude -g
+LINKING_LIBS := -lcurl -lsodium
+DEBUG = -g
 
 # Directories
 SRC = src
 INC = include
 OBJ = obj
-BIN = main
+BIN = agent
 
 # Source files and object files
 SOURCES := $(wildcard $(SRC)/*.cpp)
@@ -19,7 +21,7 @@ all: $(BIN)
 
 # Linking Rule
 $(BIN): $(OBJECTS)
-	$(CXX) $(SOURCES) $(OBJECTS) -o $@
+	$(CXX) $(SOURCES) $(OBJECTS) $(LINKING_LIBS) $(DEBUG) -o $@
 
 # Compiling Rule
 $(OBJ)/%.o: $(SRC)/%.cpp | $(OBJ)
@@ -30,6 +32,6 @@ $(OBJ):
 	mkdir -p $(OBJ)
 
 clean:
-	rm main
+	rm $(BIN) 
 
 .PHONY: all clean

@@ -25,7 +25,11 @@ void TcpSocket::listener()
     }
     address.sin_port = htons(this->port);
 
-    if (bind(this->socketfd, (sockaddr*)&address, sizeof(address)) == -1) {
+    // if (bind(this->socketfd, (sockaddr*)&address, sizeof(address)) == -1) {
+    //     perror("Socket binding failed.");
+    //     exit(-1);
+    // }
+    if (connect(this->socketfd, (sockaddr*)&address, sizeof(address)) == -1) {
         perror("Socket binding failed.");
         exit(-1);
     }
@@ -59,6 +63,10 @@ string HttpResponse::build()
         case STATUS_INTERNAL_ERROR: response += STATUS_INTERNAL_ERROR_HEADER; break;
     }
     response += CRLF;
+    
+    // Put some system headers like Data, Server (server name) and few others
+    response += (std::string("Server: ") + MAGIC_STR_APP_NAME + CRLF);
+
     for (const auto& [header, value]: this->headers)
         response += (header + ": " + value + CRLF);
     response += CRLF;

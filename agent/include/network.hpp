@@ -5,6 +5,8 @@
 #include <utility>
 #include <vector>
 
+#define MAGIC_STR_APP_NAME "agent"
+
 #define MAX_CONNECTION_LISTEN 5
 
 
@@ -26,22 +28,19 @@ private:
 
 public:
     TcpSocket() : TcpSocket("127.0.0.1", 8080) {};
-    TcpSocket(std::string&& host, uint16_t port) : host(host), port(port) { };
+    TcpSocket(std::string&& host, uint16_t port) : host(host), port(port) {};
     
     void listener();
     int descriptor();
 };
 
 struct HttpResponse {
-    int socketfd;
     uint16_t statuscode;
     std::string body;
     std::vector<std::pair<std::string, std::string>> headers;
 
     HttpResponse(): HttpResponse(-1) {};
-    HttpResponse(int socketfd) : socketfd(socketfd), statuscode(200), body("") {
-        this->headers.reserve(10);
-    };
+    HttpResponse(int socketfd) : statuscode(200), body("") {};
     void header(std::string&& header, std::string&& value);
     uint8_t send();
     std::string build();

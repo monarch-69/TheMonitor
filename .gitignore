@@ -1,3 +1,23 @@
+# Build outputs
 [Bb]in/
 *.bin
+*.out
 *.exe
+*.elf
+*.o
+agent/agent
+agent/tests/*
+!agent/tests/*.cpp
+
+# Python
+__pycache__/
+.venv/
+venv/
+
+# Secrets & local config
+.env
+*.env
+*.key
+*.pem
+agent/config.json
+agent/*.test.json
