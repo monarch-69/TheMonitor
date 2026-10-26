@@ -127,8 +127,6 @@ npm run dev
 
 ## Not implemented yet
 
-- The agent's metric collection loop is written but not yet called from `main`, so the agent does not send metrics yet.
-- The agent authentication routes are not mounted on the server.
 - The Kafka consumers print messages. Storage and spike detection logic are not written yet.
 - The frontend charts use sample data.
 
