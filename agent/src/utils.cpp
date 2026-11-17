@@ -4,6 +4,7 @@
 #include <curl/curl.h>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <unistd.h>
 #include "../include/utils.hpp"
 
 using namespace std;
@@ -71,14 +72,30 @@ Config::Config(string& config_file)
 }
 
 // Helper functions
-uint8_t gather(MemStat& mem_stat, CpuStat& cpu_stat, SystemStats& sys_stats, json& jobj)
+uint16_t get_phy_no_of_cores(const string &cpuinfo_path)
 {
-    mem_stat.memstat.timestamp = chrono::duration_cast<chrono::seconds>(
+    ifstream cpuinfo{cpuinfo_path};
+    string temp{};
+    
+    temp.resize(512);
+    cpuinfo.read(temp.data(), 512);
+    
+    auto st_pos = temp.find("cpu cores");
+    auto cores = temp.substr(
+        temp.find(':', st_pos) + 2,
+        temp.find('\n', st_pos) - temp.find(':', st_pos) + 2
+    );
+    
+    return (uint16_t)std::stoul(cores);
+}
+
+uint8_t gather(Telemetry::Sample& sample)
+{
+    uint8 mem_stat_res = read_mem_stat(sample.memstat);
+    uint8 cpu_stat_res = read_cpu_stat(sample.cpustat); 
+    sample.timestamp = chrono::duration_cast<chrono::seconds>(
         chrono::system_clock::now().time_since_epoch()
     ).count();
-
-    uint8 mem_stat_res = read_mem_stat(mem_stat);
-    uint8 cpu_stat_res = read_cpu_stat(cpu_stat);
 
     if (mem_stat_res != 0) 
         return mem_stat_res;
@@ -86,11 +103,10 @@ uint8_t gather(MemStat& mem_stat, CpuStat& cpu_stat, SystemStats& sys_stats, jso
     if (cpu_stat_res != 0) 
         return cpu_stat_res;
 
-    mem_stat.print_stats();
-    cpu_stat.print_stats();
-
-    jobj = sys_stats;
-    printf("Serialized the sys stats: \n%s\n", jobj.dump().data());
+    print_stats(sample);
+    
+    // jobj = sample;
+    // printf("Serialized the sys stats: \n%s\n", jobj.dump().data());
 
     return 0;
 }
@@ -157,7 +173,7 @@ string auth_initialize(CURL *curl, const string& pub_key, const Config& config)
     CurlWBStruct curl_wb_struct;
     curl_slist *headers{nullptr};
     json post_data_json{};
-    
+         
     headers = curl_slist_append(headers, "Content-Type: application/json");
     post_data_json["resource_id"] = config.resource_id;
     post_data_json["account_id"] = config.account_id;
@@ -231,9 +247,7 @@ string nonce_sign(const string& nonce, const string& priv_key)
         signed_nonce, sizeof(signed_nonce)
     );
 
-    return string{signed_nonce_hex};
-
-    printf("Out 'nonce_sign'\n");
+    return string(signed_nonce_hex);
 }
 
 bool auth_finalize(CURL *curl, const string& nonce, const string &priv_key, const Config &config)
@@ -248,7 +262,7 @@ bool auth_finalize(CURL *curl, const string& nonce, const string &priv_key, cons
     headers = curl_slist_append(headers, "Content-Type: application/json");
     post_data_json["account_id"] = config.account_id;
     post_data_json["resource_id"] = config.resource_id;
-    post_data_json["nonce_result"] = signed_nonce;
+    post_data_json["nonce_send_telemetry"] = signed_nonce;
     string post_data = post_data_json.dump();
     
     curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);  
@@ -324,19 +338,100 @@ bool save_config(const string& config_path, const Config& config)
     return true;
 }
 
-void run()
+void generate_payload(CURL *curl, CurlWBStruct *curl_wb_struct, curl_slist *headers, string &data)
 {
-    MemStat mem_stat;
-    CpuStat cpu_stat;
-    SystemStats sys_stats{ cpu_stat.cpustatagg, mem_stat.memstat };
-    json jobj;
+    // Set headers
+    headers = curl_slist_append(headers, "Content-Type: application/json");
+    // Set curl options
+    curl_easy_setopt(curl, CURLOPT_TIMEOUT, 5L);  
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_write_cb);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)curl_wb_struct);
+    curl_easy_setopt(curl, CURLOPT_URL, "http://localhost:8001/v1/ingestion/record");
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data.c_str());
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, (uint32_t)data.size());
+}
+
+bool send_telemetry(CURL *curl, CurlWBStruct *curl_wb_struct)
+{
+    CURLcode res = curl_easy_perform(curl);
+    
+    if (res != CURLE_OK) {
+        perror("sending to server failed");
+        return false;
+    }
+   
+    long status_code{};
+    curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &status_code);
+    
+    if (status_code != 202) {
+        printf("Error: %s\n", curl_wb_struct->data);
+        return false;
+    }
+
+    return true;
+}
+
+void run(CURL* curl, const uint64& phy_no_of_cores)
+{
+    // Let's bring in some good stuff from chrono in scope
+    using namespace chrono_literals;
+    using chrono::seconds;
+
+    Telemetry telemetry{};
+    seconds prev_time = chrono::duration_cast<chrono::seconds>(
+        chrono::system_clock::now().time_since_epoch()
+    );
 
     while (true) {
-        uint16_t agent_status = STATUS_OK;
+        uint16 agent_status{STATUS_OK};
+        Telemetry::Sample sample{phy_no_of_cores};
 
-        if (gather(mem_stat, cpu_stat, sys_stats, jobj) != 0)
+        if (uint16 res = gather(sample); res != 0)
             agent_status = STATUS_INTERNAL_ERROR; 
         // Above means that there is an internal error but the agent is running and no telemetry data will be sent.
         // Otherwise the agent would sent the 200 status code meaning everything was good with the json telemetry data
+        // I'll take care of above...later! (the case when the read wasn't successfull)
+        
+        // Now batch this sample
+        telemetry.samples.push_back(sample);
+        
+        // Now check whether it's time to send the data or not
+        // Just for now let's keep it every 2 mins
+        seconds curr_time = chrono::duration_cast<chrono::seconds>(
+        chrono::system_clock::now().time_since_epoch()
+        );
+        
+        if ((curr_time - prev_time) >= 10s) {
+            // Now is the time, just do it!!!
+            string resource_id{"fe14085e-bc2f-46b1-942b-473f84cc5a55"},
+                   tenant_id{"ea8a8dbf-2db0-4eba-a78b-0927b4a983de"};
+            json jobj{};
+            
+            telemetry.resource_id = resource_id;
+            telemetry.tenant_id = tenant_id;
+            telemetry.timestamp = chrono::duration_cast<chrono::seconds>(
+                chrono::system_clock::now().time_since_epoch()
+            ).count();
+            jobj = telemetry;
+            
+            CurlWBStruct curl_wb_struct{};
+            curl_slist *headers{nullptr};
+            string data{jobj.dump()};
+            
+            printf("[generating payload...]\n");
+            generate_payload(curl, &curl_wb_struct, headers, data);
+            // Send over the internet
+            printf("[sending telemetry...]\n");
+            bool success = send_telemetry(curl, &curl_wb_struct); 
+            
+            printf("[send result]: %d\n", success);
+            if (success)
+                telemetry.samples.clear();
+            prev_time = curr_time;
+        }
+
+        // Now let's make the agent sleep
+        sleep(2);
     }
 }

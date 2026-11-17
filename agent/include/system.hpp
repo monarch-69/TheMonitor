@@ -1,9 +1,8 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
 #include <string>
-#include <cstdint>
 #include <utility>
+#include <nlohmann/json.hpp>
 
 #define MEMINFO "/proc/meminfo"
 #define CPUINFO "/proc/cpuinfo"
@@ -29,121 +28,89 @@ using json = nlohmann::json;
 
 class MemStat {
 public:
-    struct MemStatStruct {
-        uint64 memtotal;
-        uint64 memavail;
-        uint64 memused;
-        double usedpercent;
-        uint64 swaptotal;
-        uint64 swapfree;
-        uint64 swapused;
-        double swapusedpercent;
-        uint64 timestamp; 
-    };
-    
-    MemStatStruct memstat;
-
-    MemStat() : MemStat(0) { };
-    MemStat(uint64_t initializer) { this->memstat = { 0 }; };
-    
-    MemStat(MemStat &&);
-    MemStat(const MemStat &);
-    MemStat& operator=(MemStat &&);
-    MemStat& operator=(const MemStat &);
-    ~MemStat() {};
-
-    void print_stats() {
-        printf("Snapshot at = %lu\n", this->memstat.timestamp);
-        printf(
-                "MemTotal = %lf, MemUsed = %lf, MemAvail = %lf, Percentage = %lf\n",
-               (double)this->memstat.memtotal / 1024,
-               (double)this->memstat.memused / 1024,
-               (double)this->memstat.memavail / 1024,
-               this->memstat.usedpercent
-               );
-        printf(
-                "SwapTotal = %lf, SwapFree = %lf, SwapAvail = %lf, Percentage = %lf\n",
-               (double)this->memstat.swaptotal / 1024,
-               (double)this->memstat.swapfree / 1024,
-               (double)this->memstat.swapused / 1024,
-               this->memstat.swapusedpercent
-               );
-    }
+    uint64 memtotal{};
+    uint64 memavail{};
+    uint64 memused{};
+    double usedpercent{};
+    uint64 swaptotal{};
+    uint64 swapfree{};
+    uint64 swapused{};
+    double swapusedpercent{};
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    MemStat::MemStatStruct,
+    MemStat,
     memtotal, memavail, memused, usedpercent,
-    swaptotal, swapfree, swapused, swapusedpercent, timestamp
+    swaptotal, swapfree, swapused, swapusedpercent
 );
 
 class CpuStat {
 public:
-    struct CpuStatStruct {
-        uint64 user;
-        uint64 usernice;
-        uint64 system;
-        uint64 idle;
-        uint64 iowait;
-        uint64 irq;
-        uint64 softirq;
-        uint64 steal;
-        uint64 guest;
-        uint64 guestnice;
-    }; // This is the overall usage of all the cpu cores
+    class PerCoreStat {
+    public:
+        uint64 user{};
+        uint64 usernice{};
+        uint64 system{};
+        uint64 idle{};
+        uint64 iowait{};
+        uint64 irq{};
+        uint64 softirq{};
+        uint64 steal{};
+        uint64 guest{};
+        uint64 guestnice{};
+
+        friend std::istream& operator>>(std::istream& stream, PerCoreStat& stat)
+        {
+            return stream >> stat.user >> stat.usernice >> stat.system >> stat.idle >> stat.iowait \
+                >> stat.irq >> stat.softirq >> stat.steal >> stat.guest >> stat.guestnice;
+        }
+    };
     
-    CpuStatStruct cpustatagg;
+    std::vector<PerCoreStat> cores;
     uint64 totalcores;
 
-    CpuStat(): CpuStat(0) { };
-    CpuStat(uint64 initializer) {
-        this->cpustatagg = { 0 }; // Initializing the entire struct with 0 
-        this->totalcores = initializer;
-    }
-
-    CpuStat(CpuStat &&);
-    CpuStat(const CpuStat &);
-    CpuStat& operator=(CpuStat &&);
-    CpuStat& operator=(const CpuStat &);
-    ~CpuStat() {};
-
-    void print_stats() {
-        printf("No of cores = %lu\n", this->totalcores);
-        printf(
-                "User = %lu, UserNice = %lu, System = %lu, Idle = %lu, IoWait = %lu, Irq = %lu, SoftIrq = %lu, Steal = %lu, Guest = %lu, GuestNice = %lu\n",
-               this->cpustatagg.user,
-               this->cpustatagg.usernice,
-               this->cpustatagg.system,
-               this->cpustatagg.idle,
-               this->cpustatagg.iowait,
-               this->cpustatagg.irq,
-               this->cpustatagg.softirq,
-               this->cpustatagg.steal,
-               this->cpustatagg.guest,
-               this->cpustatagg.guestnice
-               );
-    }
+    CpuStat() = default;
+    CpuStat(uint64 totalcores) : cores(totalcores + 1), totalcores(totalcores) {}
 };
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
-    CpuStat::CpuStatStruct,
+    CpuStat,
+    cores, totalcores
+);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(
+    CpuStat::PerCoreStat,
     user, usernice, system, idle, iowait,
     irq, softirq, steal, guest, guestnice
 );
 
+class Telemetry {
+public:
+    class Sample {
+    public:    
+        CpuStat cpustat;
+        MemStat memstat;
+        uint64 timestamp{};
 
-struct SystemStats {
-    CpuStat::CpuStatStruct& cpustat;
-    MemStat::MemStatStruct& memstat;
-    
-    SystemStats(CpuStat::CpuStatStruct& cpustat, MemStat::MemStatStruct& memstat) : cpustat(cpustat), memstat(memstat) {}
+        Sample() = default;
+        Sample(const uint64& phy_no_of_cores) : cpustat(phy_no_of_cores) {}
+    };
+
+    std::string tenant_id{};
+    std::string resource_id{};
+    std::vector<Sample> samples{};
+    uint64 timestamp{};
+    // Right now have elided all the Constructors and will let compiler do it.
 };
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(SystemStats, cpustat, memstat);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Telemetry, 
+        resource_id, tenant_id, samples, timestamp);
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(Telemetry::Sample, 
+        cpustat, memstat, timestamp);
 
 
-// System Functions
+// System or Helper Functions
 uint8 read_mem_stat(MemStat& mem_stat);
 uint8 read_cpu_stat(CpuStat& cpu_stat);
-
-// Helpers Functions
+void print_stats(const Telemetry::Sample& sample);
+void print_memstats(const MemStat& mem_stat);
+void print_cpustats(const CpuStat& cpu_stat);
 std::pair<uint64, uint64> get_num_pos_len(const std::string& line);
 // void to_json(json& jobj, CpuStat::CpuStatStruct& sysstats);
 // void to_json(json& jobj, MemStats& sysstats);

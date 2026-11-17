@@ -17,13 +17,32 @@ def read_settings():
 
 # Telemetry Models
 # CPU samples
-class CPUCore(BaseModel):
-    core: str
-    burst: float
+class CpuStat(BaseModel):
+    class PerCoreStat(BaseModel):
+        user: int
+        usernice: int
+        system: int
+        idle: int
+        iowait: int
+        irq: int
+        softirq: int
+        steal: int
+        guest: int
+        guestnice: int 
 
-class CPUSample(BaseModel):
-    cores: List[CPUCore]
-    avg: float
+    cores: List[PerCoreStat]
+    totalcores: int
+
+# Ram / Memory Sample
+class MemStat(BaseModel):
+    memtotal: int
+    memavail: int
+    memused: int
+    usedpercent: float
+    swaptotal: int
+    swapfree: int
+    swapused: int
+    swapusedpercent: float
 
 # Disk Sample
 class DiskSample(BaseModel):
@@ -31,12 +50,13 @@ class DiskSample(BaseModel):
 
 # Sample clas
 class Sample(BaseModel):
-    timestamp: datetime
-    cpu: CPUSample
-    disk: DiskSample
+    timestamp: int
+    cpustat: CpuStat
+    memstat: MemStat
 
 # Wrapper class which will hold list of `Sample`
 class Telemetry(BaseModel):
-    host_id: str
+    resource_id: str
     tenant_id: str
     samples: List[Sample]
+    timestamp: int

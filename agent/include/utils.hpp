@@ -10,7 +10,7 @@
 #define SUCCESS 0
 #define UNKNOWN_FLAG_USED 1
 #define CONFIG_FILE_NOT_FOUND 2
-#define UNKNOWN_CONFIG_FIELD & nonce3
+#define UNKNOWN_CONFIG_FIELD 3
 #define CONFIG_FIELD_NOT_FOUND 4
 #define CONFIG_FIELD_INVALID_VALUE 5
 
@@ -24,7 +24,6 @@
 using namespace std;
 
 struct Config {
-    bool authenticated;
     string account_id;
     string resource_id;
     string url_init_auth;
@@ -32,6 +31,7 @@ struct Config {
     string url_metric;
     string home_dir;
     string agent_private_key;
+    bool authenticated;
 
     Config(string& config_file);
     Config() = default;
@@ -55,11 +55,15 @@ struct CurlWBStruct {
     int size{0};
 };
 
-void run();
-uint8_t gather(MemStat& mem_stat, CpuStat& cpu_stat, SystemStats& sys_stats, json& jobj);
+void run(CURL* curl, const uint64& phy_no_of_cores);
+uint8_t gather(Telemetry::Sample& sample);
+void generate_payload(CURL* curl, CurlWBStruct* curl_wb_struct, curl_slist* headers, string& data);
+bool send_telemetry(CURL* curl, CurlWBStruct* curl_wb_struct);
 
 HttpResponse generate_res(uint16_t status, json& jobj);
 pair<string, string> generate_assym_keys();
+uint16_t get_phy_no_of_cores(const string& cpuinfo_path);
+uint8_t sanity_check(const Config& config);
 
 string nonce_sign(const string& nonce, const string& priv_key);
 string auth_initialize(CURL* curl, const string& pub_key, const Config& config);
@@ -69,4 +73,3 @@ bool save_privkey(const string& priv_key, const Config& config);
 bool save_config(const string& config_path, const Config& config);
 
 int curl_write_cb(void* content, int size, int buf_size, void* user_write_struct);
-uint8_t sanity_check(const Config& config);

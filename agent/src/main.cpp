@@ -6,11 +6,11 @@
 using namespace std;
 
 int main(int argc, char** argv)
-{  
+{
     std::string config_file{ "/usr/local/share/telemetry/config.json" };
 
     for (int i = 1; i < argc; i++) {
-        if (std::strcmp("--config-file", argv[i]) == 0) {
+        if (strcmp("--config-file", argv[i]) == 0) {
             if ((i + 1) < argc) {
                 config_file = argv[++i];
             }
@@ -37,32 +37,34 @@ int main(int argc, char** argv)
     }
     
     // Do some sanity checks.
-    if (config.authenticated) {
-        if (uint8_t res = sanity_check(config); res != SUCCESS)
-            exit(res);
-
-        printf("Already authenticated\n");
-    }
-    else { 
-        // Now generate the keys (public and private)
-        auto [pub_key, priv_key] = generate_assym_keys();
-
-        // Now authenticate
-        bool authenticated = authenticate(curl, pub_key, priv_key, config);
-
-        if (!authenticated) {
-            printf("Authentication Error. \nExiting.\n");
-            exit(AGENT_AUTH_FAILED);
-        }
-        printf("BINGO! Authenticated.\n");
-      
-        // Write the private key to the file
-        save_privkey(priv_key, config);
-        config.authenticated = true;
-        // Now write the final changed config to the config file
-        save_config(config_file, config);
-    }
+    // if (!config.authenticated) {
+    //     // Now generate the keys (public and private)
+    //     auto [pub_key, priv_key] = generate_assym_keys();
+    //
+    //     // Now authenticate
+    //     bool authenticated = authenticate(curl, pub_key, priv_key, config);
+    //
+    //     if (!authenticated) {
+    //         printf("Authentication Error. \nExiting.\n");
+    //         exit(AGENT_AUTH_FAILED);
+    //     }
+    //     printf("BINGO! Authenticated.\n");
+    //
+    //     // Write the private key to the file
+    //     save_privkey(priv_key, config);
+    //     config.authenticated = true;
+    //     // Now write the final changed config to the config file
+    //     save_config(config_file, config);
+    // }
+    //
+    // if (uint8_t res = sanity_check(config); res != SUCCESS)
+    //     exit(res);
+    
+    // Get the no.of cores using /proc/cpuinfo; The idea is to read around 1024 bytes
+    const uint64 PHYSICAL_CORES_PRESENT = get_phy_no_of_cores(CPUINFO);
+    printf("Total no. of phy cores: %lu\n", PHYSICAL_CORES_PRESENT);
     // run the actual run function
+    run(curl, PHYSICAL_CORES_PRESENT);
 
     return 0;
 }

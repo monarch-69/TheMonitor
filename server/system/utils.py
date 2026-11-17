@@ -7,7 +7,7 @@ from typing import NoReturn
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state["pool"] = PgAsyncConnectionPool(
-        "CONNECTION STRING",
+        "postgress://connection@string...",
         min_size=5,
         max_size=20,
         timeout=5,

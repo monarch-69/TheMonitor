@@ -18,7 +18,7 @@ async def record(
         producer: AIOKafkaProducer = request.app.state.kafka_producer
         await producer.send_and_wait(
             topic=request.app.state.consumer_settings.topic,
-            key=(telemetry.host_id + telemetry.tenant_id).encode("utf-8"),
+            key=(telemetry.resource_id + telemetry.tenant_id).encode("utf-8"),
             value=telemetry.model_dump_json().encode("utf-8")
         )
     except Exception as e:
